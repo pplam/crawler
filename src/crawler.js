@@ -14,10 +14,10 @@ function takeCategories() {
   document.getElementById('sd').click()
   const selector = 'div#condition form div#sd3 ul li:not([style*="none"])'
   const list = document.querySelectorAll(selector)
-  return Array.prototype.map.call(list, (item) => {
+  return Array.prototype.map.call(list, (li) => {
     return {
-      name: item.innerText,
-      id: item.querySelector('input').getAttribute('id'),
+      name: li.innerText,
+      id: li.querySelector('input').getAttribute('id'),
     }
   })
 }
@@ -31,9 +31,9 @@ function filter(categoryId) {
   document.querySelector(selector).click()// submit form
 }
 
-function unfilter(categoryId) {
-  document.getElementById(categoryId).click()
-}// optional
+// function unfilter(categoryId) {
+//   document.getElementById(categoryId).click()
+// }
 
 function takeEntries() {
   let selector = '#main div.bannerPage table td:nth-of-type(5)'
@@ -47,11 +47,20 @@ function takeEntries() {
   selector = '#main div.detailsInfo'
   const divs = document.querySelectorAll(selector)
   const entries = Array.prototype.map.call(divs, node => {
-    const item = node.querySelector('table input.back')
-    const entryUrl = item ? site + item.getAttribute('onclick').match(/'(.+)'/)[1] : ''
+    const title = node.querySelector('p').innerText
+
+    const trs = node.querySelectorAll('table tr:nth-of-type(3n+1)')
+    const items = Array.prototype.map.call(trs, tr => {
+      const input = tr.querySelector('input.back')
+      const itemUrl = input ? site + input.getAttribute('onclick').match(/'(.+)'/)[1] : ''
+      return {
+        subtitle: tr.querySelector('td').innerText,
+        url: itemUrl,
+      }
+    })
     return {
-      title: node.querySelector('p').innerText,
-      url: entryUrl,
+      title,
+      items,
     }
   })
 
@@ -73,12 +82,12 @@ function takeContents() {
   const site = 'http://zwdt.sh.gov.cn'
   const selector = '#con_one_1 ul li'
   const list = document.querySelectorAll(selector)
-  return Array.prototype.map.call(list, item => {
+  return Array.prototype.map.call(list, li => {
     // const term = item.innerText
-    item.click()
+    li.click()
     // const contentPath = document.querySelector('#con_one_1 iframe').getAttribute('src')
     return {
-      term: item.innerText,
+      term: li.innerText,
       url: site + document.querySelector('#con_one_1 iframe').getAttribute('src'),
     }
   })
@@ -123,7 +132,7 @@ export default class Crawler {
     await this.page.open(this.url)
     await this.page.evaluate(filter, category.id)
 
-    await delay(30000)
+    await delay(10000)
     // await this.page.render(`${category.name}.jpeg`, { format: 'jpeg', quality: '100' })
     let obj = await this.page.evaluate(takeEntries)
     let entries = obj.entries
@@ -131,14 +140,16 @@ export default class Crawler {
 
     while (obj.pageInfo[0] < obj.pageInfo[1]) {
       await this.page.evaluate(nextPage)
-      await delay(30000)
+      await delay(10000)
       obj = await this.page.evaluate(takeEntries)
       entries = entries.concat(obj.entries)
     }
     await this.page.stop()
 
     for (const entry of entries) {
-      entry.contents = entry.url ? (await this.fetchContents(entry)) : null
+      for (const item of entry.items) {
+        item.contents = item.url ? (await this.fetchContents(item)) : null
+      }
       // delay(30000)
     }
     return entries
@@ -155,10 +166,10 @@ export default class Crawler {
     // })
   }
 
-  async fetchContents(entry) {
+  async fetchContents(item) {
     // const page = await this.phantom.createPage()
     // console.log(entry)
-    await this.page.open(entry.url)
+    await this.page.open(item.url)
     // await this.page.render(`${entry.title}.jpeg`, { format: 'jpeg', quality: '100' })
     const contents = await this.page.evaluate(takeContents)
     // console.log(contents)

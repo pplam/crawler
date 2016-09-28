@@ -16,7 +16,7 @@ import Crawler from './crawler'
   console.log()
 
   // categories.forEach(async category => {
-  //   const entries = await crawler.fetchEntries(category)
+  // const entries = await crawler.fetchEntries(categories[1])
   //   console.log(entries)
     // entries.forEach(e => {
     //   console.log(e.title)
@@ -26,6 +26,7 @@ import Crawler from './crawler'
     // })
   // })
   // console.log(entries)
+  // entries.forEach(e => console.log(e))
   await crawler.abort()
 
   // console.log('#####################')
