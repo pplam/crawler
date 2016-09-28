@@ -9,7 +9,7 @@ npm install
 ## Usage
 
 ### Data structure:
-~~~
+~~~javascript
 category: {
   id,
   name,
@@ -32,27 +32,28 @@ content: {
   url,
 }
 ~~~
-The url of content point to the final resource.
+The urls of contents point to the final resources.
 
 ### Having a taste:
 ~~~
 npm run transpile
 npm run scrape
 ~~~
+Please be patient, it will take 10~20 minutes.
 
 ### Inviting it to your code:
-~~~
-import Crawler from '{path}/src/crawler'
+~~~javascript
+import Crawler from '{path}/src/crawler'  // The {path} is the path to this library
 
 async function func() {
   const crawler = new Crawler('http://zwdt.sh.gov.cn/zwdtSW/bsfw/personalWork.do')
   await crawler.init()
   const categories = await crawler.fetchCategories()  // Here you will get array of categories
-  do something...
+  // do something...
   const entries = await crawler.fetchEntries(category)  // The parameter category object must have an id property, and you will get array of entries here
-  do somthing...
+  // do somthing...
   const contents = await crawler.fetchContents(item)  // The parameter item object must have an url property, and you will get array of contents here
-  do something...
+  // do something...
   await crawler.abort()
 }
 ~~~
