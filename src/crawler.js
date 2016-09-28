@@ -1,5 +1,4 @@
 import path from 'path'
-import url from 'url'
 import phantom from 'phantom'
 
 function delay(ms) {
@@ -24,16 +23,10 @@ function takeCategories() {
 
 function filter(categoryId) {
   document.getElementById('sd').click()
-
   document.getElementById(categoryId).click()// check category
-
   const selector = '#main div.qd input.ok'
   document.querySelector(selector).click()// submit form
 }
-
-// function unfilter(categoryId) {
-//   document.getElementById(categoryId).click()
-// }
 
 function takeEntries() {
   let selector = '#main div.bannerPage table td:nth-of-type(5)'
@@ -58,15 +51,12 @@ function takeEntries() {
         url: itemUrl,
       }
     })
+
     return {
       title,
       items,
     }
   })
-
-  // if (pageInfo[0] === pageInfo[1]) {
-  //   document.getElementById(categoryId).click()// unclick current category
-  // }
 
   return {
     pageInfo,
@@ -83,9 +73,7 @@ function takeContents() {
   const selector = '#con_one_1 ul li'
   const list = document.querySelectorAll(selector)
   return Array.prototype.map.call(list, li => {
-    // const term = item.innerText
     li.click()
-    // const contentPath = document.querySelector('#con_one_1 iframe').getAttribute('src')
     return {
       term: li.innerText,
       url: site + document.querySelector('#con_one_1 iframe').getAttribute('src'),
@@ -94,10 +82,8 @@ function takeContents() {
 }
 
 export default class Crawler {
-  constructor(url, workdir = '.') {
+  constructor(url) {
     this.url = url
-    this.workdir = workdir
-    this.depth = 0
   }
 
   async init() {
@@ -113,17 +99,11 @@ export default class Crawler {
 
   async fetchCategories() {
     await this.page.open(this.url)
-    // delay(30000)
-    // await this.page.render('start.jpeg', { format: 'jpeg', quality: '100' })
     const categories = await this.page.evaluate(takeCategories)
-    // console.log(categories)
-    // await this.page.render('afterTakeCategories.jpeg', { format: 'jpeg', quality: '100' })
     await this.page.stop()
+
     for (const category of categories) {
       category.entries = await this.fetchEntries(category)
-    //   await this.page.render(`${category.id}.jpeg`, { format: 'jpeg', quality: '100' })
-    //   console.log(category)
-      // delay(30000)
     }
     return categories
   }
@@ -131,16 +111,13 @@ export default class Crawler {
   async fetchEntries(category) {
     await this.page.open(this.url)
     await this.page.evaluate(filter, category.id)
+    await delay(5000)
 
-    await delay(10000)
-    // await this.page.render(`${category.name}.jpeg`, { format: 'jpeg', quality: '100' })
     let obj = await this.page.evaluate(takeEntries)
     let entries = obj.entries
-    // console.log(entries)
-
     while (obj.pageInfo[0] < obj.pageInfo[1]) {
       await this.page.evaluate(nextPage)
-      await delay(10000)
+      await delay(5000)
       obj = await this.page.evaluate(takeEntries)
       entries = entries.concat(obj.entries)
     }
@@ -150,40 +127,14 @@ export default class Crawler {
       for (const item of entry.items) {
         item.contents = item.url ? (await this.fetchContents(item)) : null
       }
-      // delay(30000)
     }
     return entries
-    // entries.forEach()
-    // return entries.map(async entry => {
-      // const contents = await this.fetchContents(entry)
-      // console.log(contents)
-      // return {
-      //   title: entry.title,
-      //   url: entry.url,
-      //   contents: await this.fetchContents(entry),
-        // contents: entry.contents,
-    //   }
-    // })
   }
 
   async fetchContents(item) {
-    // const page = await this.phantom.createPage()
-    // console.log(entry)
     await this.page.open(item.url)
-    // await this.page.render(`${entry.title}.jpeg`, { format: 'jpeg', quality: '100' })
     const contents = await this.page.evaluate(takeContents)
-    // console.log(contents)
-    // console.log()
     await this.page.stop()
-    // await this.page.close()
     return contents
-    // return [1, 2, 3]
-    // const contents = await this.page.evaluate(takeContents)
-    // return contents.map(content => {
-    //   return {
-    //     term: content.term,
-    //     url: url.resolve(this.url, content.path),
-    //   }
-    // })
   }
 }
