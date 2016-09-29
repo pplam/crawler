@@ -2,7 +2,7 @@
 A crawler for scraping guide information from Shanghai government's site
 
 ## Installation
-~~~
+~~~shell
 git clone https://github.com/pplam/crawler.git && cd crawler
 npm install
 ~~~
@@ -35,7 +35,7 @@ content: {
 The urls of contents point to the final resources.
 
 ### Having a taste:
-~~~
+~~~shell
 npm run transpile
 npm run scrape
 ~~~
