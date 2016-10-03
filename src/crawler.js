@@ -93,41 +93,68 @@ export default class Crawler {
     this.page = await this.phantom.createPage()
   }
 
-  async abort() {
+  async start() {
+    const rets = []
+    const categories = await this.fetchCategories()
+    for (const c of categories) {
+      const entries = await this.fetchEntries(c)
+      for (const entry of entries) {
+        const items = entry.items
+        for (const item of items) {
+          const contents = await this.fetchContents(item)
+          const ret = {}
+
+          ret['category'] = c.name
+          ret['title'] = entry.title
+          ret['subtitle'] = item.subtitle
+          ret['mainUrl'] = item.url
+
+          ret['whenAndWhere'] = contents[0]['term']
+          ret['whenAndWhereUrl'] = contents[0]['url']
+          ret['requirements'] = contents[1]['term']
+          ret['requirementsUrl'] = contents[1]['url']
+          ret['meterials'] = contents[2]['term']
+          ret['meterialsUrl'] = contents[2]['url']
+          ret['accordingTo'] = contents[3]['term']
+          ret['accordingToUrl'] = contents[3]['url']
+          ret['steps'] = contents[4]['term']
+          ret['stepsUrl'] = contents[4]['url']
+          ret['extra'] = contents[5]['term']
+          ret['extraUrl'] = contents[5]['url']
+
+          rets.push(ret)
+        }
+      }
+    }
+
+    return rets
+  }
+
+  async stop() {
     await this.phantom.exit()
   }
 
   async fetchCategories() {
     await this.page.open(this.url)
     const categories = await this.page.evaluate(takeCategories)
-    await this.page.stop()
-
-    for (const category of categories) {
-      category.entries = await this.fetchEntries(category)
-    }
     return categories
   }
 
   async fetchEntries(category) {
     await this.page.open(this.url)
     await this.page.evaluate(filter, category.id)
-    await delay(5000)
+    await delay(1000)
 
     let obj = await this.page.evaluate(takeEntries)
     let entries = obj.entries
     while (obj.pageInfo[0] < obj.pageInfo[1]) {
       await this.page.evaluate(nextPage)
-      await delay(5000)
+      await delay(1000)
       obj = await this.page.evaluate(takeEntries)
       entries = entries.concat(obj.entries)
     }
     await this.page.stop()
 
-    for (const entry of entries) {
-      for (const item of entry.items) {
-        item.contents = item.url ? (await this.fetchContents(item)) : null
-      }
-    }
     return entries
   }
 
