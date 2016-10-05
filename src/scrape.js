@@ -6,8 +6,7 @@ import Crawler from './crawler'
   const crawler = new Crawler('http://zwdt.sh.gov.cn/zwdtSW/bsfw/personalWork.do')
 
   await crawler.init()
-  const categories = await crawler.fetchCategories()
-  await crawler.abort()
-
-  console.log(categories)
+  const ret = await crawler.start()
+  console.log(JSON.stringify(ret, null, 2))
+  await crawler.stop()
 }())

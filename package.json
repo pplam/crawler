@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "transpile": "[ -d src ] && ./node_modules/.bin/babel src --out-dir lib || true",
+    "prescrape": "npm run transpile",
     "scrape": "node ./lib/scrape.js",
     "test": "mocha --ui bdd --compilers js:babel-core/register --require babel-polyfill --recursive --reporter spec --check-leaks -t 20000 test"
   },

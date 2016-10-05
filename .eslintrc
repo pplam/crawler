@@ -1,7 +1,8 @@
 {
   "extends": "airbnb/base",
   "env": {
-    "mocha": "true"
+    "mocha": "true",
+    "document": "true",
   },
   "rules": {
     "arrow-body-style": 0,
