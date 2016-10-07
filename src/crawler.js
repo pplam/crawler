@@ -109,18 +109,31 @@ export default class Crawler {
           ret['subtitle'] = item.subtitle
           ret['mainUrl'] = item.url
 
-          ret['whenAndWhere'] = contents[0]['term']
-          ret['whenAndWhereUrl'] = contents[0]['url']
-          ret['requirements'] = contents[1]['term']
-          ret['requirementsUrl'] = contents[1]['url']
-          ret['meterials'] = contents[2]['term']
-          ret['meterialsUrl'] = contents[2]['url']
-          ret['accordingTo'] = contents[3]['term']
-          ret['accordingToUrl'] = contents[3]['url']
-          ret['steps'] = contents[4]['term']
-          ret['stepsUrl'] = contents[4]['url']
-          ret['extra'] = contents[5]['term']
-          ret['extraUrl'] = contents[5]['url']
+          if (contents.length > 0) {
+            ret['whenAndWhere'] = contents[0]['term']
+            ret['whenAndWhereUrl'] = contents[0]['url']
+            ret['whenAndWhereHtml'] = contents[0]['html']
+
+            ret['requirements'] = contents[1]['term']
+            ret['requirementsUrl'] = contents[1]['url']
+            ret['requirementsHtml'] = contents[1]['html']
+
+            ret['meterials'] = contents[2]['term']
+            ret['meterialsUrl'] = contents[2]['url']
+            ret['meterialsHtml'] = contents[2]['html']
+
+            ret['accordingTo'] = contents[3]['term']
+            ret['accordingToUrl'] = contents[3]['url']
+            ret['accordingToHtml'] = contents[3]['html']
+
+            ret['steps'] = contents[4]['term']
+            ret['stepsUrl'] = contents[4]['url']
+            ret['stepsHtml'] = contents[4]['html']
+
+            ret['extra'] = contents[5]['term']
+            ret['extraUrl'] = contents[5]['url']
+            ret['extraHtml'] = contents[5]['html']
+          }
 
           rets.push(ret)
         }
@@ -137,19 +150,20 @@ export default class Crawler {
   async fetchCategories() {
     await this.page.open(this.url)
     const categories = await this.page.evaluate(takeCategories)
+    await this.page.stop()
     return categories
   }
 
   async fetchEntries(category) {
     await this.page.open(this.url)
     await this.page.evaluate(filter, category.id)
-    await delay(1000)
+    await delay(3000)
 
     let obj = await this.page.evaluate(takeEntries)
     let entries = obj.entries
     while (obj.pageInfo[0] < obj.pageInfo[1]) {
       await this.page.evaluate(nextPage)
-      await delay(1000)
+      await delay(3000)
       obj = await this.page.evaluate(takeEntries)
       entries = entries.concat(obj.entries)
     }
@@ -159,9 +173,17 @@ export default class Crawler {
   }
 
   async fetchContents(item) {
-    await this.page.open(item.url)
-    const contents = await this.page.evaluate(takeContents)
-    await this.page.stop()
+    let contents = []
+    if (item.url) {
+      await this.page.open(item.url)
+      contents = await this.page.evaluate(takeContents)
+      await this.page.stop()
+      for (const content of contents) {
+        await this.page.open(content.url)
+        content.html = await this.page.property('content')
+        await this.page.stop()
+      }
+    }
     return contents
   }
 }
