@@ -81,6 +81,53 @@ function takeContents() {
   })
 }
 
+const extractContent = [
+  () => {
+    const selector = '.departInfo'
+    const divs = document.querySelectorAll(selector)
+    return Array.prototype.map.call(divs, div => {
+      return div.textContent
+    })
+  },
+  () => {
+    const selector = 'body table tr'
+    const trs = document.querySelectorAll(selector)
+    return Array.prototype.map.call(trs, tr => {
+      return tr.textContent
+    })
+  },
+  () => {
+    const selector = '#innerTable'
+    const tds = document.querySelectorAll(selector)
+    return Array.prototype.map.call(tds, td => {
+      return td.textContent
+    })
+  },
+  () => {
+    const selector = 'td'
+    const tds = document.querySelectorAll(selector)
+    return Array.prototype.map.call(tds, td => {
+      return td.textContent
+    })
+  },
+  () => {
+    const selector = 'td'
+    const tds = document.querySelectorAll(selector)
+    return Array.prototype.map.call(tds, td => {
+      return td.textContent
+    })
+  },
+  () => {
+    const selector = 'body table tr'
+    const trs = document.querySelectorAll(selector)
+    const txts = Array.prototype.map.call(trs, tr => {
+      return tr.textContent
+    })
+
+    return txts
+  }
+]
+
 export default class Crawler {
   constructor(url) {
     this.url = url
@@ -135,6 +182,7 @@ export default class Crawler {
             ret['extraHtml'] = contents[5]['html']
           }
 
+          return ret;
           rets.push(ret)
         }
       }
@@ -178,9 +226,10 @@ export default class Crawler {
       await this.page.open(item.url)
       contents = await this.page.evaluate(takeContents)
       await this.page.stop()
-      for (const content of contents) {
+      for (let i = 0; i < contents.length; i++) {
+        const content = contents[i]
         await this.page.open(content.url)
-        content.html = await this.page.property('content')
+        content.html = await this.page.evaluate(extractContent[i])
         await this.page.stop()
       }
     }
