@@ -229,11 +229,10 @@ export default class Crawler {
       for (let i = 0; i < contents.length; i++) {
         const content = contents[i]
         await this.page.open(content.url)
-        await delay(3000)
         // content.html = await this.page.evaluate(() => {
         //   return document.querySelector('body').textContent
         // })
-        console.log(this.page.content)
+        content.html = await this.page.property('plainText')
         await this.page.stop()
       }
     }
