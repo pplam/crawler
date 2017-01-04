@@ -40,14 +40,14 @@ function takeEntries() {
   selector = '#main div.detailsInfo'
   const divs = document.querySelectorAll(selector)
   const entries = Array.prototype.map.call(divs, node => {
-    const title = node.querySelector('p').innerText
+    const title = node.querySelector('p').textContent
 
     const trs = node.querySelectorAll('table tr:nth-of-type(3n+1)')
     const items = Array.prototype.map.call(trs, tr => {
       const input = tr.querySelector('input.back')
       const itemUrl = input ? site + input.getAttribute('onclick').match(/'(.+)'/)[1] : ''
       return {
-        subtitle: tr.querySelector('td').innerText,
+        subtitle: tr.querySelector('td').textContent,
         url: itemUrl,
       }
     })
@@ -229,7 +229,11 @@ export default class Crawler {
       for (let i = 0; i < contents.length; i++) {
         const content = contents[i]
         await this.page.open(content.url)
-        content.html = await this.page.evaluate(extractContent[i])
+        await delay(3000)
+        // content.html = await this.page.evaluate(() => {
+        //   return document.querySelector('body').textContent
+        // })
+        console.log(this.page.content)
         await this.page.stop()
       }
     }
